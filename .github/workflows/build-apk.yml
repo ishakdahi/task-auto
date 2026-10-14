@@ -1,0 +1,29 @@
+name: Build APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Décompresser le projet
+        run: unzip -q task_auto.zip
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+      - name: Préparer Android
+        working-directory: task_auto
+        run: python3 tool/setup_android.py
+      - name: Compiler l'APK
+        working-directory: task_auto
+        run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: task-auto-apk
+          path: task_auto/build/app/outputs/flutter-apk/app-release.apk
